@@ -1,19 +1,24 @@
 package main
 
 import (
-	"fmt"
+	"context"
 	"log"
+	"log/slog"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/yash-codes/students-api/internal/config"
 )
 
 func main() {
-	fmt.Println("Welcome to students-api")
+	slog.Info("Welcome to students-api")
 
 	// load config
 	cfg := config.MustLoad()
-	fmt.Println("Configurations:", *cfg)
+	slog.Info("Configurations parsing completed", "configurations", *cfg)
 
 	// TODO: database setup
 
@@ -32,9 +37,26 @@ func main() {
 		Handler: router,
 	}
 
-	if err := server.ListenAndServe(); err != nil {
-		log.Fatalf("Failed to start server:%s\n", err.Error())
+	done := make(chan os.Signal, 1)
+
+	signal.Notify(done, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
+
+	go func() {
+		// Start the server
+		if err := server.ListenAndServe(); err != nil {
+			log.Fatalf("Failed to start server: %s\n", err.Error())
+		}
+		slog.Info("Server Started at", "Address", cfg.Addr)
+	}()
+
+	<-done
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	if err := server.Shutdown(ctx); err != nil {
+		slog.Error("Failed to shutdown server glacefully", "error", err)
 	}
 
-	fmt.Println("Server Started at", cfg.Addr)
+	slog.Info("Server shutdown successfully!")
 }
