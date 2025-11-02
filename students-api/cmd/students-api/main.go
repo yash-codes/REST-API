@@ -12,6 +12,7 @@ import (
 
 	"github.com/yash-codes/students-api/internal/config"
 	"github.com/yash-codes/students-api/internal/http/handlers/student"
+	"github.com/yash-codes/students-api/internal/storage/sqlite"
 )
 
 func main() {
@@ -22,6 +23,13 @@ func main() {
 	slog.Info("Configurations parsing completed", "configurations", *cfg)
 
 	// TODO: database setup
+	//storage, err := sqlite.New(cfg)
+	_, err := sqlite.New(cfg)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	slog.Info("Storage initialized", "env", cfg.Env, "version", "1.0.0")
 
 	// setup router
 	router := http.NewServeMux()
