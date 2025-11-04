@@ -36,6 +36,9 @@ func main() {
 
 	// declare and defile handler funnction corrosponding to the url path "/"
 	router.HandleFunc("POST /api/students", student.New(storage))
+	router.HandleFunc("GET /api/students/{id}", student.GetById(storage))
+	router.HandleFunc("GET /api/students", student.GetList(storage))
+	router.HandleFunc("DELETE /api/students/{id}", student.DeleteStudent(storage))
 
 	// setup server
 	// config the server
