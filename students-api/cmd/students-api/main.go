@@ -24,7 +24,7 @@ func main() {
 
 	// TODO: database setup
 	//storage, err := sqlite.New(cfg)
-	_, err := sqlite.New(cfg)
+	storage, err := sqlite.New(cfg)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -35,7 +35,7 @@ func main() {
 	router := http.NewServeMux()
 
 	// declare and defile handler funnction corrosponding to the url path "/"
-	router.HandleFunc("POST /api/students", student.New())
+	router.HandleFunc("POST /api/students", student.New(storage))
 
 	// setup server
 	// config the server

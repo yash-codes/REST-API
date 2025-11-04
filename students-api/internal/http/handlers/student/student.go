@@ -5,14 +5,16 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/yash-codes/students-api/internal/storage"
 	"github.com/yash-codes/students-api/internal/types"
 	"github.com/yash-codes/students-api/internal/utils/response"
 )
 
-func New() http.HandlerFunc {
+func New(storage storage.Storage) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		//w.Write([]byte("Welcome to students-api"))
 		var student types.Student
@@ -36,6 +38,13 @@ func New() http.HandlerFunc {
 			return
 		}
 
-		response.WriteJson(w, http.StatusCreated, map[string]string{"success": "OK"})
+		lastInsertId, err := storage.CreateStudent(student.Name, student.Email, student.Age)
+		if err != nil {
+			response.WriteJson(w, http.StatusInternalServerError, err)
+			return
+		}
+		slog.Info("user created successfully")
+
+		response.WriteJson(w, http.StatusCreated, map[string]int64{"ID": lastInsertId})
 	}
 }
