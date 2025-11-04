@@ -108,6 +108,6 @@ func DeleteStudent(storage storage.Storage) http.HandlerFunc {
 		}
 
 		slog.Info("deleted student successfully")
-		response.WriteJson(w, http.StatusOK, map[string]int64{"ID": affectedId})
+		response.WriteJson(w, http.StatusOK, map[string]int64{"affectedRows": affectedId})
 	}
 }
